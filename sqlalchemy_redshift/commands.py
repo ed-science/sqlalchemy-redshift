@@ -344,12 +344,12 @@ def visit_unload_from_select(element, compiler, **kw):
     if el.format is None:
         format_ = ''
     elif el.format == Format.csv:
-        format_ = 'FORMAT AS {}'.format(el.format.value)
+        format_ = f'FORMAT AS {el.format.value}'
         if el.delimiter is not None or el.fixed_width is not None:
             raise ValueError(
                 'CSV format cannot be used with delimiter or fixed_width')
     elif el.format == Format.parquet:
-        format_ = 'FORMAT AS {}'.format(el.format.value)
+        format_ = f'FORMAT AS {el.format.value}'
         if any((
             el.delimiter, el.fixed_width, el.add_quotes, el.escape, el.null,
             el.header, el.gzip
@@ -377,13 +377,15 @@ def visit_unload_from_select(element, compiler, **kw):
         escape='ESCAPE' if el.escape else '',
         null='NULL AS :null_as' if el.null is not None else '',
         allow_overwrite='ALLOWOVERWRITE' if el.allow_overwrite else '',
-        parallel='PARALLEL OFF' if not el.parallel else '',
+        parallel='' if el.parallel else 'PARALLEL OFF',
         region='REGION :region' if el.region is not None else '',
         max_file_size=(
             'MAXFILESIZE :max_file_size MB'
-            if el.max_file_size is not None else ''
+            if el.max_file_size is not None
+            else ''
         ),
     )
+
 
     query = sa.text(qs)
 
@@ -640,11 +642,12 @@ class CopyCommand(_ExecutableClause):
             raise ValueError('"delimiter" parameter must be a single '
                              'character')
 
-        if ignore_header is not None:
-            if not isinstance(ignore_header, numbers.Integral):
-                raise TypeError(
-                    '"ignore_header" parameter should be an integer'
-                )
+        if ignore_header is not None and not isinstance(
+            ignore_header, numbers.Integral
+        ):
+            raise TypeError(
+                '"ignore_header" parameter should be an integer'
+            )
 
         table = None
         columns = []
@@ -802,7 +805,7 @@ def visit_copy_command(element, compiler, **kw):
         parameters.append('EMPTYASNULL')
 
     if element.encoding is not None:
-        parameters.append('ENCODING AS ' + Encoding(element.encoding).value)
+        parameters.append(f'ENCODING AS {Encoding(element.encoding).value}')
 
     if element.escape:
         parameters.append('ESCAPE')
