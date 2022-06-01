@@ -12,8 +12,7 @@ class TestDDLCompiler(object):
 
     @pytest.fixture
     def compiler(self, stub_redshift_dialect):
-        compiler = RedshiftDDLCompiler(stub_redshift_dialect, None)
-        return compiler
+        return RedshiftDDLCompiler(stub_redshift_dialect, None)
 
     def _compare_strings(self, expected, actual):
         assert expected is not None, "Expected was None"

@@ -153,33 +153,164 @@ PRIMARY_KEY_RE = re.compile(r"""
 # Reserved words as extracted from Redshift docs.
 # See pull_reserved_words.sh at the top level of this repository
 # for the code used to generate this set.
-RESERVED_WORDS = set([
-    "aes128", "aes256", "all", "allowoverwrite", "analyse", "analyze",
-    "and", "any", "array", "as", "asc", "authorization", "az64",
-    "backup", "between", "binary", "blanksasnull", "both", "bytedict",
-    "bzip2", "case", "cast", "check", "collate", "column", "constraint",
-    "create", "credentials", "cross", "current_date", "current_time",
-    "current_timestamp", "current_user", "current_user_id", "default",
-    "deferrable", "deflate", "defrag", "delta", "delta32k", "desc",
-    "disable", "distinct", "do", "else", "emptyasnull", "enable",
-    "encode", "encrypt", "encryption", "end", "except", "explicit",
-    "false", "for", "foreign", "freeze", "from", "full", "globaldict256",
-    "globaldict64k", "grant", "group", "gzip", "having", "identity",
-    "ignore", "ilike", "in", "initially", "inner", "intersect", "into",
-    "is", "isnull", "join", "language", "leading", "left", "like",
-    "limit", "localtime", "localtimestamp", "lun", "luns", "lzo", "lzop",
-    "minus", "mostly16", "mostly32", "mostly8", "natural", "new", "not",
-    "notnull", "null", "nulls", "off", "offline", "offset", "oid", "old",
-    "on", "only", "open", "or", "order", "outer", "overlaps", "parallel",
-    "partition", "percent", "permissions", "pivot", "placing", "primary",
-    "raw", "readratio", "recover", "references", "respect", "rejectlog",
-    "resort", "restore", "right", "select", "session_user", "similar",
-    "snapshot", "some", "sysdate", "system", "table", "tag", "tdes",
-    "text255", "text32k", "then", "timestamp", "to", "top", "trailing",
-    "true", "truncatecolumns", "union", "unique", "unnest", "unpivot",
-    "user", "using", "verbose", "wallet", "when", "where", "with",
+RESERVED_WORDS = {
+    "aes128",
+    "aes256",
+    "all",
+    "allowoverwrite",
+    "analyse",
+    "analyze",
+    "and",
+    "any",
+    "array",
+    "as",
+    "asc",
+    "authorization",
+    "az64",
+    "backup",
+    "between",
+    "binary",
+    "blanksasnull",
+    "both",
+    "bytedict",
+    "bzip2",
+    "case",
+    "cast",
+    "check",
+    "collate",
+    "column",
+    "constraint",
+    "create",
+    "credentials",
+    "cross",
+    "current_date",
+    "current_time",
+    "current_timestamp",
+    "current_user",
+    "current_user_id",
+    "default",
+    "deferrable",
+    "deflate",
+    "defrag",
+    "delta",
+    "delta32k",
+    "desc",
+    "disable",
+    "distinct",
+    "do",
+    "else",
+    "emptyasnull",
+    "enable",
+    "encode",
+    "encrypt",
+    "encryption",
+    "end",
+    "except",
+    "explicit",
+    "false",
+    "for",
+    "foreign",
+    "freeze",
+    "from",
+    "full",
+    "globaldict256",
+    "globaldict64k",
+    "grant",
+    "group",
+    "gzip",
+    "having",
+    "identity",
+    "ignore",
+    "ilike",
+    "in",
+    "initially",
+    "inner",
+    "intersect",
+    "into",
+    "is",
+    "isnull",
+    "join",
+    "language",
+    "leading",
+    "left",
+    "like",
+    "limit",
+    "localtime",
+    "localtimestamp",
+    "lun",
+    "luns",
+    "lzo",
+    "lzop",
+    "minus",
+    "mostly16",
+    "mostly32",
+    "mostly8",
+    "natural",
+    "new",
+    "not",
+    "notnull",
+    "null",
+    "nulls",
+    "off",
+    "offline",
+    "offset",
+    "oid",
+    "old",
+    "on",
+    "only",
+    "open",
+    "or",
+    "order",
+    "outer",
+    "overlaps",
+    "parallel",
+    "partition",
+    "percent",
+    "permissions",
+    "pivot",
+    "placing",
+    "primary",
+    "raw",
+    "readratio",
+    "recover",
+    "references",
+    "respect",
+    "rejectlog",
+    "resort",
+    "restore",
+    "right",
+    "select",
+    "session_user",
+    "similar",
+    "snapshot",
+    "some",
+    "sysdate",
+    "system",
+    "table",
+    "tag",
+    "tdes",
+    "text255",
+    "text32k",
+    "then",
+    "timestamp",
+    "to",
+    "top",
+    "trailing",
+    "true",
+    "truncatecolumns",
+    "union",
+    "unique",
+    "unnest",
+    "unpivot",
+    "user",
+    "using",
+    "verbose",
+    "wallet",
+    "when",
+    "where",
+    "with",
     "without",
-])
+}
 
 
 class RedshiftTypeEngine(TypeEngine):
@@ -278,9 +409,7 @@ class SUPER(RedshiftTypeEngine, sa.dialects.postgresql.TEXT):
         return sa.func.json_parse(bindvalue)
 
     def process_bind_param(self, value, dialect):
-        if not isinstance(value, str):
-            return json.dumps(value)
-        return value
+        return value if isinstance(value, str) else json.dumps(value)
 
 
 class HLLSKETCH(RedshiftTypeEngine, sa.dialects.postgresql.TEXT):
@@ -329,10 +458,7 @@ class RelationKey(namedtuple('RelationKey', ('name', 'schema'))):
         return super(RelationKey, cls).__new__(cls, name, schema)
 
     def __str__(self):
-        if self.schema is None:
-            return self.name
-        else:
-            return self.schema + "." + self.name
+        return self.name if self.schema is None else f"{self.schema}.{self.name}"
 
     @staticmethod
     def _unquote(part):
@@ -481,16 +607,14 @@ class RedshiftDDLCompiler(PGDDLCompiler):
     def get_column_specification(self, column, **kwargs):
         colspec = self.preparer.format_column(column)
 
-        colspec += " " + self.dialect.type_compiler.process(column.type)
+        colspec += f" {self.dialect.type_compiler.process(column.type)}"
 
         default = self.get_column_default_string(column)
         if default is not None:
-            # Identity constraints show up as *default* when reflected.
-            m = IDENTITY_RE.match(default)
-            if m:
+            if m := IDENTITY_RE.match(default):
                 colspec += " IDENTITY({seed},{step})".format(**m.groupdict())
             else:
-                colspec += " DEFAULT " + default
+                colspec += f" DEFAULT {default}"
 
         colspec += self._fetch_redshift_column_attributes(column)
 
@@ -502,25 +626,21 @@ class RedshiftDDLCompiler(PGDDLCompiler):
         text = ""
         if sa_version >= Version('1.3.0'):
             info = column.dialect_options['redshift']
-        else:
-            if not hasattr(column, 'info'):
-                return text
+        elif hasattr(column, 'info'):
             info = column.info
 
-        identity = info.get('identity')
-        if identity:
+        else:
+            return text
+        if identity := info.get('identity'):
             text += " IDENTITY({0},{1})".format(identity[0], identity[1])
 
-        encode = info.get('encode')
-        if encode:
-            text += " ENCODE " + encode
+        if encode := info.get('encode'):
+            text += f" ENCODE {encode}"
 
-        distkey = info.get('distkey')
-        if distkey:
+        if distkey := info.get('distkey'):
             text += " DISTKEY"
 
-        sortkey = info.get('sortkey')
-        if sortkey:
+        if sortkey := info.get('sortkey'):
             text += " SORTKEY"
         return text
 
@@ -793,11 +913,11 @@ class RedshiftDialectMixin(DefaultDialect):
         info_cache = kw.get('info_cache')
         all_relations = self._get_all_relation_info(connection,
                                                     info_cache=info_cache)
-        relation_names = []
-        for key, relation in all_relations.items():
-            if key.schema == schema and relation.relkind == relkind:
-                relation_names.append(key.name)
-        return relation_names
+        return [
+            key.name
+            for key, relation in all_relations.items()
+            if key.schema == schema and relation.relkind == relkind
+        ]
 
     def _get_column_info(self, *args, **kwargs):
         kw = kwargs.copy()
@@ -816,9 +936,11 @@ class RedshiftDialectMixin(DefaultDialect):
             *args,
             **kw
         )
-        if isinstance(column_info['type'], VARCHAR):
-            if column_info['type'].length is None:
-                column_info['type'] = NullType()
+        if (
+            isinstance(column_info['type'], VARCHAR)
+            and column_info['type'].length is None
+        ):
+            column_info['type'] = NullType()
         if 'info' not in column_info:
             column_info['info'] = {}
         if encode and encode != 'none':
@@ -1020,7 +1142,7 @@ class Psycopg2RedshiftDialectMixin(RedshiftDialectMixin):
                 *args, **kwargs
             )
         )
-        default_args.update(cparams)
+        default_args |= cparams
         return cargs, default_args
 
     @classmethod
@@ -1028,9 +1150,7 @@ class Psycopg2RedshiftDialectMixin(RedshiftDialectMixin):
         try:
             return importlib.import_module(cls.driver)
         except ImportError:
-            raise ImportError(
-                'No module named {}'.format(cls.driver)
-            )
+            raise ImportError(f'No module named {cls.driver}')
 
 
 class RedshiftDialect_psycopg2(
@@ -1061,7 +1181,7 @@ class RedshiftDialect_redshift_connector(RedshiftDialectMixin, PGDialect):
                 if select._limit_clause is None:
                     text += "\n LIMIT ALL"
                 # an integer value for offset is retrieved
-                text += " OFFSET " + str(select._offset)
+                text += f" OFFSET {str(select._offset)}"
             return text
 
         def visit_mod_binary(self, binary, operator, **kw):
@@ -1217,7 +1337,7 @@ class RedshiftDialect_redshift_connector(RedshiftDialectMixin, PGDialect):
             cparams['user'] = cparams['username']
             del cparams['username']
 
-        default_args.update(cparams)
+        default_args |= cparams
         return cargs, default_args
 
 
@@ -1230,9 +1350,7 @@ def gen_columns_from_children(root):
     """
     if isinstance(root, (Delete, BinaryExpression, BooleanClauseList)):
         for child in root.get_children():
-            yc = gen_columns_from_children(child)
-            for it in yc:
-                yield it
+            yield from gen_columns_from_children(child)
     elif isinstance(root, sa.Column):
         yield root
 
@@ -1307,15 +1425,12 @@ def visit_delete_stmt(element, compiler, **kwargs):
 
     if sa_version >= Version('1.4.0'):
         if element.whereclause is not None:
-            clause = compiler.process(element.whereclause, **kwargs)
-            if clause:
+            if clause := compiler.process(element.whereclause, **kwargs):
                 whereclause = ' WHERE {clause}'.format(clause=clause)
-    else:
-        whereclause_tuple = element.get_children()
-        if whereclause_tuple:
-            whereclause = ' WHERE {clause}'.format(
-                clause=compiler.process(*whereclause_tuple, **kwargs)
-            )
+    elif whereclause_tuple := element.get_children():
+        whereclause = ' WHERE {clause}'.format(
+            clause=compiler.process(*whereclause_tuple, **kwargs)
+        )
 
     if whereclause:
         usingclause_tables = []

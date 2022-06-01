@@ -68,7 +68,7 @@ def get_table_attributes(preparer,
             raise sa.exc.ArgumentError(
                 u"DISTKEY specification is required for DISTSTYLE KEY"
             )
-        text += " DISTSTYLE " + diststyle
+        text += f" DISTSTYLE {diststyle}"
 
     if has_distkey:
         if isinstance(distkey, sa.Column):

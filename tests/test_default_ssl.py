@@ -9,7 +9,7 @@ CERT_PATH = resource_filename("sqlalchemy_redshift", "redshift-ca-bundle.crt")
 
 
 def test_ssl_args(redshift_dialect_flavor):
-    engine = sa.create_engine('{}://test'.format(redshift_dialect_flavor))
+    engine = sa.create_engine(f'{redshift_dialect_flavor}://test')
     dialect = engine.dialect
     url = engine.url
 

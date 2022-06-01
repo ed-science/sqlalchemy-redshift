@@ -12,7 +12,7 @@ def table_to_ddl(engine, table):
 def test_view_reflection(redshift_engine):
     table_ddl = "CREATE TABLE my_table (col1 INTEGER, col2 INTEGER)"
     view_query = "SELECT my_table.col1, my_table.col2 FROM my_table"
-    view_ddl = "CREATE VIEW my_view AS %s" % view_query
+    view_ddl = f"CREATE VIEW my_view AS {view_query}"
     conn = redshift_engine.connect()
     try:
         conn.execute(table_ddl)

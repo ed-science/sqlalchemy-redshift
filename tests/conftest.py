@@ -115,7 +115,7 @@ class DriverParameterizedTests:
     @classmethod
     def set_drivers(cls,  _drivers):
         DriverParameterizedTests.redshift_dialect_flavors = [
-            'redshift+{}'.format(x) for x in _drivers
+            f'redshift+{x}' for x in _drivers
         ]
 
 
